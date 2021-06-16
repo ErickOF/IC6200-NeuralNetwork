@@ -17,7 +17,8 @@ EPOCHS: int = 10
 
 ###----------------------------OTHER PARAMETERS----------------------------###
 # Select device
-device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
+device: torch.device = torch.device(
+    'cuda:0' if torch.cuda.is_available() else 'cpu')
 
 
 ###----------------------------GENERATE DATASET----------------------------###
@@ -52,8 +53,30 @@ rnd_samples: torch.Tensor = torch.randint(0, TRAINING_SAMPLES_NUMBER, (15,))
 for i, rnd_sample in enumerate(rnd_samples):
     plt.subplot(3, 5, i + 1)
     plt.title(
-        'Imagen Clara' if training_labels[rnd_sample] == 1 else 'Imagen Oscura')
+        'Imagen Clara' if training_labels[rnd_sample] else 'Imagen Oscura')
     plt.imshow(training_imgs[rnd_sample], cmap='gray')
 
 plt.tight_layout(pad=1)
 plt.show()
+
+
+###-----------------------------LOSS FUNCTIONS-----------------------------###
+class Loss:
+    def mse(self, x: torch.Tensor) -> float:
+        return x.root(2).sum().sqrt()[0]
+
+
+###--------------------------ACTIVATION FUNCTIONS--------------------------###
+def relu() -> None:
+    return
+
+def sigmoid() -> None:
+    return
+
+
+###-----------------------------NEURAL NETWORK-----------------------------###
+class NeuralNetwork:
+    def __init__(self, n_inputs: int, n_outputs: int, n_hidden: int = 2,
+                 learning_rate: float = 0.005,
+                 device: torch.device = torch.device('cpu')):
+        pass
