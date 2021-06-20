@@ -5,15 +5,15 @@ import torch
 
 ###-------------------------------PARAMETERS-------------------------------###
 
-TRAINING_SAMPLES_NUMBER: int = 1000
-TEST_SAMPLES_NUMBER: int = 2000
+TRAINING_SAMPLES_NUMBER: int = 2000
+TEST_SAMPLES_NUMBER: int = 2 * TRAINING_SAMPLES_NUMBER
 
 IMAGE_DIM: tuple = (10, 10)
 N_HIDDEN: int = 50
 N_OUTPUTS: int = 1
 
-LEARNING_RATE: float = 0.05
-EPOCHS: int = 200
+LEARNING_RATE: float = 0.005
+EPOCHS: int = 20
 
 
 ###----------------------------OTHER PARAMETERS----------------------------###
@@ -155,6 +155,10 @@ class NeuralNetwork:
         # Outputs of the layers
         self._out: list = []
 
+        # Previous deltas
+        self._delta1: torch.Tensor = torch.zeros((self._n_outputs,))
+        self._delta2: torch.Tensor = torch.zeros((self._n_inputs, self._n_hidden))
+
     def _backpropagation(self, x: torch.Tensor, y: torch.Tensor) -> None:
         """Learn using generalized delta rule.
 
@@ -165,9 +169,15 @@ class NeuralNetwork:
         # Hidden-Output
         delta: torch.Tensor = (self._out[-1] - y) * self._out[-1] *\
                               (1 - self._out[-1])
-        self._w_output -= self._learning_rate * delta *\
-                        self._out[-3].reshape(self._w_output.shape)
+        self._delta1 = self._learning_rate * (delta *\
+                        self._out[-3].reshape(self._w_output.shape) +\
+                        self._delta1)
+        self._w_output -= self._delta1
         # Input-Hidden
+        delta2: torch.Tensor = delta * self._w_output
+        self._delta2 = self._learning_rate * (delta2.mm(x.reshape((1, -1))).t() +\
+                        self._delta2)
+        self._w_hidden -= self._delta2
 
     def _feedforward(self, x: torch.Tensor) -> torch.Tensor:
         """Compute Neural Network output
@@ -232,8 +242,7 @@ class NeuralNetwork:
 
             # Save weights
             if save:
-                with open(f'{file_name}.nnw', 'w') as file:
-                    file.write(f'{self._w_hidden}\n{self._w_output}')
+                torch.save([self._w_hidden, self._w_output], f'{file_name}.nnw')
 
             print()
 
@@ -278,19 +287,20 @@ class NeuralNetwork:
         Args:
             file_name (str, optional): Name of the file. Defaults to '0'.
         """
-        with open(f'{file_name}.nnw', 'r') as file:
-            w_hidden, w_output = file.read().split('\n')
-
-            self._w_hidden = eval(w_hidden)
-            self._w_output = eval(w_output)
+        self._w_hidden, self._w_output = torch.load(f'{file_name}.nnw')
 
 
 ###---------------------------------TRAIN----------------------------------###
 
 nn: NeuralNetwork = NeuralNetwork(n_inputs=IMAGE_DIM[0] * IMAGE_DIM[1],
-                                  n_hidden=N_HIDDEN, n_outputs=N_OUTPUTS,
+                                  n_hidden=N_HIDDEN,
+                                  n_outputs=N_OUTPUTS,
                                   learning_rate=LEARNING_RATE)
+
+# Load previous training
 nn.load()
+
+# Train the neural network
 nn.fit(training_imgs, training_labels, epochs=EPOCHS, save=True)
 
 
