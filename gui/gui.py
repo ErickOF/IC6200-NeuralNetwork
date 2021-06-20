@@ -5,7 +5,7 @@ import random
 # Defining some constants
 TITLE = 'R&M'
 # Dimensions
-HEIGHT, WIDTH = 500, 570
+HEIGHT, WIDTH = 420, 530
 # Background color
 BG_COLOR = 'violet'
 # Button color
@@ -26,6 +26,8 @@ grid_color = []
 # Gameboard dimensions 8x8
 N, M = 10, 10
 
+WHITE = 1
+BLACK = 0
 # Create a main window
 window = tk.Tk()
 
@@ -49,23 +51,24 @@ window.resizable(width=False, height=False)
 # Set background
 window.config(bg=BG_COLOR)
 
-
+#Changes color of grid when pressed
 def on_click(i,j,event):
-        print(grid[i][j].cget('bg'))
         color = grid[i][j].cget('bg')
         if color == 'black':
             color = 'white'
+            grid_color[i][j] = WHITE
         else:
             color = 'black'
+            grid_color[i][j] = BLACK
         grid[i][j].config(bg=color)
         # Create grid
         grid[i][j].grid(row=i, column=j)
-        grid_color[(i*10)+j] = color
+        
 
 # Init gameboard
-grid = [[tk.Label(window, width=7, height=2, borderwidth=3, relief='solid') for j in range(M)] for i in range(N)]
+grid = [[tk.Label(window, width=7, height=2, borderwidth=1, relief='solid') for j in range(M)] for i in range(N)]
 
-grid_color = ['white' for j in range(M*N)]
+grid_color = [[WHITE for j in range(M)] for i in range(N)]
 
 #Bind color change to labels
 for i, row in enumerate(grid):
@@ -92,6 +95,7 @@ def drawGrid(grid):
 # Draw grid
 drawGrid(grid)
 
+#Executes the Neural Network
 def run():
     print(grid_color)
 
@@ -101,7 +105,11 @@ btnRun = tk.Button(window, text='Execute', bg=BG_BTN,
                           activebackground=BTN_TEXT_COLOR,
                           activeforeground=BG_BTN,
                           command=run) # Add command
-btnRun.place(x=500, y=385)
+btnRun.place(x=460, y=340)
+
+# Add label
+lbresult = tk.Label(width=12, height=2, borderwidth=0, relief='solid', text='Imagen Clara', font=(TEXT_FONT,18), bg='violet')
+lbresult.place(x=1, y=340)
 
 
 # Call main loop
