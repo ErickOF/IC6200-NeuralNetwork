@@ -1,4 +1,4 @@
-from nn.layers.layer import layer
+from nn.layers.layer import Layer
 
 import numpy as np
 
