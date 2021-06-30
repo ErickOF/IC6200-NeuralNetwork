@@ -58,7 +58,7 @@ class Network:
     def save(self, file_name: str = '0') -> None:
         """Save network wieghts
         """
-        np.save(f'{file_name}_nnw.npy',
+        np.save(f'src/{file_name}_nnw.npy',
                 np.array([l.weights for l in self.network if isinstance(l,
                                                                         Dense)]))
 

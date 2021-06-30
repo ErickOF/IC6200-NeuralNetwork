@@ -29,11 +29,6 @@ class Dense(Layer):
         # Bias
         self.dbiases: np.array = np.zeros(n_outputs)
 
-    def forward(self, x: np.array) -> np.array:
-        """Perform an affine transformation
-        """
-        return np.dot(x, self.weights) + self.biases
-
     def backward(self, x: np.array, grad_output: np.array) -> np.array:
         """Compute backpropagation of Dense Layer
         """
@@ -53,3 +48,8 @@ class Dense(Layer):
         self.biases -= self.dbiases
         
         return grad_x
+
+    def forward(self, x: np.array) -> np.array:
+        """Perform an affine transformation
+        """
+        return np.dot(x, self.weights) + self.biases

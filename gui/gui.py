@@ -1,7 +1,8 @@
 import numpy as np
 import random
 import tkinter as tk
-from typing import List
+from tqdm import trange
+from typing import Iterator, List, Tuple
 
 from nn.layers.layer import Layer
 from nn.layers.dense import Dense
@@ -113,6 +114,41 @@ lbl_result: tk.Label = tk.Label(width=12, height=2, borderwidth=0,
                                 font=(TEXT_FONT, 18), bg='violet')
 lbl_result.place(x=1, y=340)
 
+
+def generate_dataset(size: tuple = (10, 10), n_samples: int = 1000,
+                     flatten: bool = True) -> Tuple[np.array]:
+    # Generate samples
+    samples: np.array = np.random.randint(0, 2, (n_samples,) + size) / 1.0
+
+    # Generate labels
+    non_zeros: np.array = np.count_nonzero(samples, axis=(1, 2))
+    labels: np.arry = np.zeros((n_samples,), dtype=np.uint8)
+    labels[non_zeros > (size[0] * size[1] // 2)] = 1
+
+    if flatten:
+        samples = samples.reshape([samples.shape[0], -1])
+
+    return samples, labels
+
+X_train, y_train = generate_dataset((10, 10), 12000)
+
+def iterate_minibatches(x: np.array, y: np.array,
+                        batchsize: int) -> Iterator[Tuple[np.array]]:
+    """Generate randomly mini bataches
+    """
+    # Randomize samples
+    index: np.array = np.random.permutation(len(x))
+
+    for start_idx in trange(0, len(x) - batchsize + 1, batchsize):
+        extract: np.array = index[start_idx:start_idx + batchsize]
+
+        yield x[extract], y[extract]
+
+EPOCHS: int = 50
+
+training_history: List = []
+validation_history: List = []
+
 # Create Neural Network
 layers: List[Layer] = [Dense(100, 100),  # Input layer
                        ReLU(),          # ReLU layer
@@ -122,6 +158,24 @@ layers: List[Layer] = [Dense(100, 100),  # Input layer
 
 nn: Network = Network(layers)
 nn.load('src/0')
+
+for epoch in range(EPOCHS):
+    for x_batch, y_batch in iterate_minibatches(X_train, y_train, batchsize=32):
+        nn.train(x_batch, y_batch)
+
+    X_val, y_val = generate_dataset((10, 10), 250000)
+
+    training_history.append(np.mean(nn.predict(X_train) == y_train))
+    validation_history.append(np.mean(nn.predict(X_val) == y_val))
+
+    print(f'Epoch: {epoch + 1}')
+    print(f'Train accuracy: {training_history[-1]}')
+    print(f'Validation accuracy: {validation_history[-1]}')
+
+    if validation_history[-1] > 0.95:
+        break
+
+nn.save('2')
 
 
 def run() -> None:
