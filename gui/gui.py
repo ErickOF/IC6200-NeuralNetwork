@@ -175,7 +175,7 @@ for epoch in range(EPOCHS):
     if validation_history[-1] > 0.95:
         break
 
-nn.save('2')
+nn.save('1')
 
 
 def run() -> None:
